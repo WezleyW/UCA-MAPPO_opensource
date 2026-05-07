@@ -1,0 +1,34 @@
+method: "QMIX"
+timestamp: ${now:%Y%m%d_%H%M%S}
+
+training:
+  total_episodes: 200000    # 总训练回合数
+  device: cpu               # 训练设备
+  minibatch_size: 64        # QMIX 更新 batch size（<=0 时使用 QMIX.batch_size）
+  epoch_num: 3              # 每个 rollout 后执行的更新轮数
+
+  plog_interval: 500        # 每隔多少回合绘图
+  plog_window: 100          # 滑动平均窗口
+  save_interval: null       # 每隔多少回合保存模型
+  seed: 42                  # 随机种子
+  resume: false             # 是否断点续训（true 时使用 resume_timestamp）
+  resume_timestamp: "20260101_000000"  # 续训目标时间戳（output_train/<method>/<timestamp>）
+
+QMIX:
+  agent_hidden_dim: 128     # 每个智能体 Q 网络隐藏层维度
+  mixing_embed_dim: 64      # Mixing 网络隐层维度
+  hypernet_embed_dim: 64    # Hypernetwork 隐层维度
+  q_lr: 5.0e-5              # Q 与 mixer 联合优化学习率
+  scheduler_warmup_steps: 1000   # warmup 步数（按 episode 计），lr 从 0 线性升到 base lr
+  scheduler_decay_steps: 100000  # 衰减步数（按 episode 计），warmup 后线性衰减
+  scheduler_decay_rate: 0.1      # 最终 lr 比例，最终 lr = base lr * decay_rate
+  gamma: 0.99               # 折扣因子
+
+  epsilon_start: 1.0        # epsilon-greedy 初始值
+  epsilon_end: 0.05         # epsilon-greedy 最小值
+  epsilon_decay: 50000      # epsilon 衰减速度（按环境步）
+
+  replay_size: 200000       # 经验回放池容量
+  min_replay_size: 2000     # 至少积累多少样本后开始训练
+  batch_size: 64            # 默认训练 batch（仅当 training.minibatch_size<=0 时生效）
+  target_update_interval: 200 # 每多少次更新同步一次 target 网络

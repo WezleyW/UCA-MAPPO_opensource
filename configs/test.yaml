@@ -1,0 +1,30 @@
+# Batch test config
+scene_config: "configs/scene.yaml"
+output_dir: "output_test"
+num_episodes: 1000
+seed: 42
+
+# Each test item selects one trained model by:
+# - method: policy module name under UAV_policy/
+# - timestamp: folder name under output_train/<method>/<timestamp>/
+# - model: "best" or "latest"
+tests:
+  - method: "UCA_MAPPO"
+    timestamp: "20260501_202558"
+    model: "best"
+
+  # - method: "MAPPO"
+  #   timestamp: "20260501_021754"
+  #   model: "best"
+
+  - method: "QMIX"
+    timestamp: "20260501_083626"
+    model: "best"
+
+  # - method: "IPPO"
+  #   timestamp: "20260501_055257"
+  #   model: "best"
+
+  # - method: "DDQN"
+  #   timestamp: "20260501_121720"
+  #   model: "best"

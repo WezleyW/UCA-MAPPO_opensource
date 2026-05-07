@@ -1,0 +1,38 @@
+method: "MAPPO"
+timestamp: ${now:%Y%m%d_%H%M%S}
+
+training:
+  total_episodes: 200000    # 总训练回合数
+  device: cpu               # 训练设备，设为 cpu 即可
+  minibatch_size: 15        # 一个 rollout/trajectory 中的 minibatch 数，设为 0 则不使用 minibatch，直接用整个 rollout 进行训练
+  epoch_num: 3              # 一个 rollout/trajectory 的训练轮数
+
+  plog_interval: 500        # 每隔多少回合打印一次日志
+  plog_window: 100          # 日志窗口大小  
+  save_interval: null       # 每隔多少回合保存一次模型
+
+  seed: 42                  # 随机种子
+  resume: false             # 是否断点续训（true 时使用 resume_timestamp）
+  resume_timestamp: "20260101_000000"  # 续训目标时间戳（output_train/<method>/<timestamp>）
+
+MAPPO:
+  hidden_dim: 128
+  actor_lr: 5.0e-5          # Actor 学习率
+  critic_lr: 1.0e-4         # Critic 学习率
+  scheduler_warmup_steps: 1000   # warmup 步数（按 episode 计），lr 从 0 线性升到 base lr
+  scheduler_decay_steps: 100000  # 衰减步数（按 episode 计），warmup 后线性衰减
+  scheduler_decay_rate: 0.1      # 最终 lr 比例，最终 lr = base_lr * decay_rate
+  gamma: 0.99       # 强化学习中的折扣因子 γ
+  lmbda: 0.95       # GAE 中的衰减系数、优势平滑系数 λ （0时等同TD，1时等同MC）
+
+  # 熵正则参数设置 (L^actor=L^ppo - beta * entropy)
+  beta0: 0.03         # 初始熵正则系数
+  beta_decay: 0.995   # 熵正则退火系数
+  beta_min: 0.0       # 最小熵正则系数
+
+  # 控制探索性及剪裁相关设置
+  eps: 0.15           # PPO 剪裁系数
+  target_kl: 0.020    # KL 过大时动态提前终止 epoch
+
+  # 策略熵表示探索性，熵越大表示策略越随机，探索性越强；熵越小表示策略越确定，探索性越弱。
+  # KL 散度表示新旧策略之间的差异，KL 越大表示新旧策略差异越大，更新幅度越大；KL 越小表示新旧策略差异越小，更新幅度越小。

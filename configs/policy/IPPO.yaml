@@ -1,0 +1,37 @@
+method: "IPPO"
+timestamp: ${now:%Y%m%d_%H%M%S}
+
+training:
+  total_episodes: 200000    # 总训练回合数
+  device: cpu               # 训练设备
+  minibatch_size: 128       # PPO 更新的 mini-batch 大小（<=0 时使用全量）
+  epoch_num: 3              # 每个 rollout 的 PPO 更新轮数
+
+  plog_interval: 500        # 每隔多少回合绘图
+  plog_window: 100          # 滑动平均窗口
+  save_interval: null       # 每隔多少回合保存模型
+  seed: 42                  # 随机种子
+  resume: false             # 是否断点续训（true 时使用 resume_timestamp）
+  resume_timestamp: "20260101_000000"  # 续训目标时间戳（output_train/<method>/<timestamp>）
+
+IPPO:
+  hidden_dim: 128           # Actor/Critic 隐层维度
+  actor_lr: 5.0e-5          # Actor 学习率
+  critic_lr: 1.0e-4         # Critic 学习率
+  scheduler_warmup_steps: 1000   # warmup 步数（按 episode 计）
+  scheduler_decay_steps: 100000  # 衰减步数（按 episode 计）
+  scheduler_decay_rate: 0.1      # 最终 lr 比例
+  gamma: 0.99               # 折扣因子
+  lmbda: 0.95               # GAE 衰减系数
+
+  eps: 0.10                 # PPO clip 系数
+  target_kl: 0.015          # KL 早停阈值
+
+  beta0: 0.03               # 初始熵正则系数
+  beta_decay: 0.99995       # 熵正则退火
+  beta_min: 0.001           # 熵正则最小值
+
+  max_grad_norm_actor: 0.5  # Actor 梯度裁剪
+  max_grad_norm_critic: 1.0 # Critic 梯度裁剪
+  adv_clip: 5.0             # 归一化后优势裁剪
+  ratio_max: 4.0            # PPO ratio 的额外硬裁剪，抑制局部 critic 带来的极端更新

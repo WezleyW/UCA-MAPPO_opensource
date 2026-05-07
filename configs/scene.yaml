@@ -1,0 +1,44 @@
+env:  # 环境配置
+  field_width: 10   # 战场宽度（y 方向网格数）
+  field_length: 10  # 战场长度（x 方向网格数）
+
+  target_num: 3     # 目标数量
+  target_pos:       # 目标坐标列表（1-based，[x, y]）
+    - [5, 1]
+    - [9, 3]
+    - [5, 7]
+
+  max_steps: 1000  # 任务最大步数
+
+UAV:  # 无人机集群配置
+  num: 10  # 无人机数量
+  initial_pos:  # 无人机初始位置列表（1-based，[x, y]）
+    - [9, 5]
+    - [7, 10]
+    - [4, 8]
+    - [6, 6]
+    - [9, 3]
+    - [5, 3]
+    - [4, 9]
+    - [2, 5]
+    - [6, 8]
+    - [9, 1]
+    
+  sense_radius: 1.5  # 感知半径
+  sense_alpha_max: 0.98  # d=0 时侦查正确率
+  sense_alpha_thr: 0.90  # d=sense_radius 时侦查正确率
+  sense_declay: "exp"  # 侦查正确率衰减方式（"exp" 或 "linear"）
+  sense_distance_weight_k: 2.0  # 联合信息融合时的距离权重系数
+  confidential_interval: 0.95  # 置信区间（p>=0.95 或 p<=0.05 视为已判定）
+
+  connect_radius: 4  # 通信半径
+  initial_connect_status:  # 初始连接状态（1-based，每条边只写一次，系统自动转对称邻接矩阵）
+    - [1, 4]   # UAV1 <-> UAV4
+    - [1, 5]   # UAV1 <-> UAV5
+    - [2, 7]   # UAV2 <-> UAV7
+    - [3, 7]   # UAV3 <-> UAV7
+    - [3, 8]   # UAV3 <-> UAV8
+    - [4, 6]   # UAV4 <-> UAV6
+    - [4, 7]   # UAV4 <-> UAV7
+    - [5, 10]  # UAV5 <-> UAV10
+    - [7, 9]   # UAV7 <-> UAV9

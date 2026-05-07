@@ -1,0 +1,48 @@
+# UCA-MAPPO (Uncertainty-aware Contribution-weighted Advantage MAPPO)
+method: "UCA_MAPPO"
+timestamp: ${now:%Y%m%d_%H%M%S}
+
+training:
+  total_episodes: 200000    # 总训练回合数
+  device: cpu               # 训练设备
+  minibatch_size: 15        # rollout 内 minibatch 大小（<=0 时使用全量）
+  epoch_num: 3              # 每个 rollout 的 PPO 更新轮数
+
+  plog_interval: 10000      # 每隔多少回合绘图
+  plog_window: 100          # 滑动平均窗口
+  save_interval: null       # 每隔多少回合保存模型
+  seed: 42                  # 随机种子
+  resume: false             # 是否断点续训（true 时使用 resume_timestamp）
+  resume_timestamp: "20260423_162149"  # 续训目标时间戳（output_train/<method>/<timestamp>）
+
+UCA_MAPPO:
+  hidden_dim: 128
+
+  actor_lr: 5.0e-5          # Actor 学习率
+  critic_lr: 1.0e-4         # Critic 学习率
+  scheduler_warmup_steps: 1000   # warmup 步数（按 episode 计），lr 从 0 线性升到 base lr
+  scheduler_decay_steps: 100000   # 衰减步数（按 episode 计），warmup 后线性衰减
+  scheduler_decay_rate: 0.3      # 最终 lr 比例，最终 lr = base_lr * decay_rate
+
+  gamma: 0.99               # 折扣因子
+  lmbda: 0.95               # GAE 衰减系数
+
+  eps: 0.15                 # PPO clip 系数
+  target_kl: 0.020          # KL 早停阈值
+
+  beta0: 0.03               # 初始熵正则系数
+  beta_decay: 0.9995         # 熵正则退火
+  beta_min: 0.005             # 熵正则最小值
+
+  # UCA 额外参数（优势重加权）
+  uca_ema_decay: 0.5        # 对贡献做时间 EMA 平滑。0 表示不用 EMA；越接近 1，时间平滑越强，联合贡献越稳但响应更慢。
+
+  uca_weight_norm: "linear"  # 贡献权重归一化方式。"softmax" 使用 exp(c/tau)；"linear" 使用 c/sum(c)，此时 uca_tau 无效。
+  uca_tau: 1                  # softmax 温度 tau。仅在 uca_weight_norm="softmax" 时生效；tau 越小，权重越“尖锐”（赢家通吃）；tau 越大，权重越接近均匀，行为更保守更稳定。
+  
+  uca_rho: 1               # 权重平滑系数 rho。实际权重 = (1-rho)/N + rho*w_raw。rho=0 表示完全均匀（忽略贡献），rho=1 表示完全使用原始贡献权重。
+
+  uca_m_min: 0.02           # 幅值门阈值 m_min。g_m=clip(mean(c_i,t)/m_min,0,1)，用于抑制“整体贡献很小”时的过度重加权。设为 0 则关闭 m 门(g_m=1)。
+  uca_p_min: 0.1           # 有效参与度门阈值 p_min。g_p=clip(p_eff/p_min,0,1)，p_eff基于贡献分布均匀性(有效样本数)计算；越“头部集中”则 p_eff 越小，lambda_t 会自动下降。设为 0 则关闭 p 门(g_p=1)。
+
+  uca_theta: 0.5           # 单一缩放幅度参数 theta。实际每步使用 lambda_t=g_m(t)g_p(t)theta，再令 s_i(t)=1+lambda_t*((Nw_i(t)-1)/(N-1))。
